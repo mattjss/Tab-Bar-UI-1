@@ -531,41 +531,15 @@ export const TabBar: React.FC = () => {
             </motion.div>
           </motion.div>
 
-          {/* ── #3 Search (placeholder in flex flow) ── */}
+          {/* ── #3 Search (invisible spacer in flex flow — overlay handles visuals) ── */}
           <div
             style={{
               width: 44,
               height: 44,
-              borderRadius: 32,
-              backgroundColor: '#252727',
-              boxShadow: 'inset 0 0 0 1px #323232',
               flexShrink: 0,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              padding: 10,
-              cursor: 'pointer',
-              opacity: searchOpen ? 0 : 1,
+              visibility: 'hidden',
             }}
-          >
-            <div
-              style={{
-                width: 24,
-                height: 24,
-                borderRadius: 12,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                flexShrink: 0,
-              }}
-            >
-              <img
-                src="/icons/tab-search.svg"
-                alt=""
-                style={{ width: 16, height: 16, display: 'block' }}
-              />
-            </div>
-          </div>
+          />
 
           {/* ── Search overlay — expands right-to-left over entire bar ── */}
           <motion.div
@@ -573,7 +547,11 @@ export const TabBar: React.FC = () => {
             animate={{
               width: searchOpen ? 352 : 44,
             }}
-            transition={gentleSpring}
+            transition={
+              searchOpen
+                ? gentleSpring
+                : { type: 'tween', duration: 0.28, ease: [0.4, 0, 0.2, 1] }
+            }
             style={{
               position: 'absolute',
               right: 0,

@@ -58,6 +58,7 @@ export const TabBar: React.FC = () => {
             left: 0,
             display: 'flex',
             flexDirection: 'column',
+            alignItems: 'flex-start',
             gap: 8,
             pointerEvents: open ? 'auto' : 'none',
           }}

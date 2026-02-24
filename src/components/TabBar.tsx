@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { motion, LayoutGroup, AnimatePresence } from 'framer-motion'
+import { Shimmer } from './shimmer-text'
 
 /* ─── App data ─────────────────────────────────────────────────── */
 const recentApps = [
@@ -595,10 +596,24 @@ export const TabBar: React.FC = () => {
             initial={false}
             animate={{
               width: searchOpen ? 352 : 44,
+              boxShadow: searchOpen
+                ? [
+                    '0 0 0 1px rgba(50, 254, 196, 0.5), 0 0 16px rgba(50, 254, 196, 0.35)',
+                    '0 0 0 1px rgba(50, 254, 196, 0.85), 0 0 28px rgba(50, 254, 196, 0.65)',
+                    '0 0 0 1px rgba(50, 254, 196, 0.5), 0 0 16px rgba(50, 254, 196, 0.35)',
+                  ]
+                : 'inset 0 0 0 1px #323232',
             }}
             transition={
               searchOpen
-                ? gentleSpring
+                ? {
+                    width: gentleSpring,
+                    boxShadow: {
+                      duration: 3.4,
+                      repeat: Infinity,
+                      ease: 'easeInOut',
+                    },
+                  }
                 : { type: 'tween', duration: 0.28, ease: [0.4, 0, 0.2, 1] }
             }
             style={{
@@ -608,7 +623,6 @@ export const TabBar: React.FC = () => {
               height: 44,
               borderRadius: 32,
               backgroundColor: '#252727',
-              boxShadow: 'inset 0 0 0 1px #323232',
               overflow: 'hidden',
               display: 'flex',
               alignItems: 'center',
@@ -700,18 +714,22 @@ export const TabBar: React.FC = () => {
                   lineHeight: 1.1,
                 }}
               >
-                What are you looking for?
+                {/* 1) Base label — stays fully visible after type-in animation */}
+                <span>What are you looking for?</span>
+
+                {/* 2) Shimmer highlight — overlays the text without fading it out */}
                 {searchOpen && (
                   <span
                     aria-hidden="true"
-                    className="search-shimmer"
                     style={{
                       position: 'absolute',
                       inset: 0,
                       pointerEvents: 'none',
                     }}
                   >
-                    What are you looking for?
+                    <Shimmer duration={2.4} spread={2}>
+                      What are you looking for?
+                    </Shimmer>
                   </span>
                 )}
               </motion.span>

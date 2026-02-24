@@ -11,10 +11,10 @@ const recentApps = [
 /* ─── Menu items ───────────────────────────────────────────────── */
 const menuItems = [
   { id: 'home', label: 'Home', icon: '/icons/tab-home.svg', shortcut: 'H' },
-  { id: 'move', label: 'Move', icon: '/icons/tab-move.svg', shortcut: 'M' },
   { id: 'activity', label: 'Activity', icon: '/icons/tab-activity.svg', shortcut: 'A' },
-  { id: 'portfolio', label: 'Portfolio', icon: '/icons/menu-portfolio.svg' },
+  { id: 'portfolio', label: 'Analytics', icon: '/icons/menu-portfolio.svg' },
   { id: 'documents', label: 'Documents', icon: '/icons/menu-documents.svg' },
+  { id: 'move', label: 'Move', icon: '/icons/tab-move.svg', shortcut: 'M' },
 ]
 
 /* Menu item positions from Figma — all items are uniform 216px wide
@@ -64,6 +64,7 @@ export const TabBar: React.FC = () => {
   const [searchOpen, setSearchOpen] = useState(false)
   const [hoveredItem, setHoveredItem] = useState<string | null>(null)
   const [hoveredTab, setHoveredTab] = useState<string | null>(null)
+  const [hoveredSearch, setHoveredSearch] = useState(false)
   const tabBarRef = useRef<HTMLDivElement>(null)
 
   /* Close when clicking anywhere outside the tab bar */
@@ -162,39 +163,55 @@ export const TabBar: React.FC = () => {
                       layoutTransition={{ ...spring, delay: open ? openStagger : closeStagger }}
                     />
                   )}
-                  <motion.span
+                  {/* App name — type reveal left-to-right, then arrow after */}
+                  <motion.div
                     initial={false}
-                    animate={
-                      open ? { opacity: 1, x: 0 } : { opacity: 0, x: -10 }
-                    }
+                    animate={{
+                      clipPath: open
+                        ? 'inset(0 0% 0 0)'
+                        : 'inset(0 100% 0 0)',
+                    }}
                     transition={
                       open
-                        ? { ...gentleSpring, delay: openStagger + 0.04 }
-                        : { ...gentleSpring, delay: closeStagger }
+                        ? {
+                            duration: 0.32,
+                            delay: openStagger + 0.06,
+                            ease: [0.25, 0.1, 0.25, 1],
+                          }
+                        : { duration: 0.15, ease: [0.4, 0, 1, 1] }
                     }
                     style={{
-                      fontFamily: "'IBM Plex Mono', monospace",
-                      fontSize: 12,
-                      color: '#e4e4e4',
-                      lineHeight: 'normal',
+                      overflow: 'hidden',
                       whiteSpace: 'nowrap',
                     }}
                   >
-                    {app.label}
-                  </motion.span>
+                    <span
+                      style={{
+                        fontFamily: "'IBM Plex Mono', monospace",
+                        fontSize: 12,
+                        color: '#e4e4e4',
+                        lineHeight: 'normal',
+                      }}
+                    >
+                      {app.label}
+                    </span>
+                  </motion.div>
                   <motion.img
                     src="/icons/arrow-right.svg"
                     alt=""
                     initial={false}
                     animate={
-                      open ? { opacity: 1, x: 0 } : { opacity: 0, x: -4 }
+                      open ? { opacity: 1, x: 0 } : { opacity: 0, x: -6 }
                     }
                     transition={
                       open
-                        ? { ...gentleSpring, delay: openStagger + 0.07 }
-                        : { ...gentleSpring, delay: closeStagger }
+                        ? {
+                            ...gentleSpring,
+                            delay: openStagger + 0.06 + 0.32,
+                          }
+                        : { duration: 0.1, delay: closeStagger }
                     }
-                    style={{ width: 16, height: 16, display: 'block' }}
+                    style={{ width: 16, height: 16, display: 'block', flexShrink: 0 }}
                   />
                 </div>
               </motion.div>
@@ -346,25 +363,39 @@ export const TabBar: React.FC = () => {
                       onClick={icon === 'tab-menu' ? handleMenuToggle : undefined}
                       onMouseEnter={() => setHoveredTab(icon)}
                       onMouseLeave={() => setHoveredTab(null)}
-                      animate={{
-                        backgroundColor: hoveredTab === icon ? '#323232' : 'rgba(50, 50, 50, 0)',
-                      }}
-                      transition={{ duration: 0.12 }}
                       style={{
                         width: 24,
                         height: 24,
-                        borderRadius: 12,
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
                         flexShrink: 0,
                         cursor: 'pointer',
+                        position: 'relative',
                       }}
                     >
+                      {/* Slightly larger circle hover only; frame stays 24×24 */}
+                      <motion.div
+                        animate={{
+                          backgroundColor: hoveredTab === icon ? '#323232' : 'rgba(50, 50, 50, 0)',
+                        }}
+                        transition={{ duration: 0.12 }}
+                        style={{
+                          position: 'absolute',
+                          left: '50%',
+                          top: '50%',
+                          width: 32,
+                          height: 32,
+                          borderRadius: 16,
+                          marginLeft: -16,
+                          marginTop: -16,
+                          pointerEvents: 'none',
+                        }}
+                      />
                       <img
                         src={`/icons/${icon}.svg`}
                         alt=""
-                        style={{ width: 16, height: 16, display: 'block' }}
+                        style={{ width: 16, height: 16, display: 'block', position: 'relative', zIndex: 1 }}
                       />
                     </motion.div>
                   ))}
@@ -440,14 +471,14 @@ export const TabBar: React.FC = () => {
                         transformOrigin: 'top center',
                       }}
                     >
-                      {/* Icon + Label */}
+                      {/* Icon + Label — keep layout, add left-to-right reveal */}
                       <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
                         <motion.div
                           initial={false}
                           animate={
                             menuOpen
-                              ? { scale: 1, opacity: 1 }
-                              : { scale: 0.5, opacity: 0 }
+                              ? { opacity: 1, x: 0 }
+                              : { opacity: 0, x: -6 }
                           }
                           transition={
                             menuOpen
@@ -466,13 +497,29 @@ export const TabBar: React.FC = () => {
                           initial={false}
                           animate={
                             menuOpen
-                              ? { opacity: 1, x: 0 }
-                              : { opacity: 0, x: -6 }
+                              ? {
+                                  opacity: 1,
+                                  x: 0,
+                                  clipPath: 'inset(0 0% 0 0)',
+                                }
+                              : {
+                                  opacity: 0,
+                                  x: -6,
+                                  clipPath: 'inset(0 100% 0 0)',
+                                }
                           }
                           transition={
                             menuOpen
-                              ? { ...gentleSpring, delay: openStagger + 0.04 }
-                              : { ...gentleSpring, delay: closeStagger }
+                              ? {
+                                  ...gentleSpring,
+                                  duration: 0.32,
+                                  delay: openStagger + 0.06,
+                                }
+                              : {
+                                  ...gentleSpring,
+                                  duration: 0.15,
+                                  delay: closeStagger,
+                                }
                           }
                           style={{
                             fontFamily: "'IBM Plex Mono', monospace",
@@ -480,13 +527,15 @@ export const TabBar: React.FC = () => {
                             color: '#ffffff',
                             lineHeight: 'normal',
                             whiteSpace: 'nowrap',
+                            display: 'inline-block',
+                            overflow: 'hidden',
                           }}
                         >
                           {item.label}
                         </motion.span>
                       </div>
 
-                      {/* Shortcut badge */}
+                      {/* Shortcut badge — after icon + text reveal (like arrow in 3+ Apps) */}
                       {item.shortcut && (
                         <motion.div
                           initial={false}
@@ -497,7 +546,7 @@ export const TabBar: React.FC = () => {
                           }
                           transition={
                             menuOpen
-                              ? { ...spring, delay: openStagger + 0.06 }
+                              ? { ...spring, delay: openStagger + 0.06 + 0.32 }
                               : { ...spring, delay: closeStagger }
                           }
                           style={{
@@ -569,55 +618,104 @@ export const TabBar: React.FC = () => {
             }}
             onClick={handleSearchClick}
           >
-            {/* Search icon — always visible */}
+            {/* Search icon — same 32×32 hover circle as center bar icons; hover on icon so it works when open */}
             <div
+              onMouseEnter={() => setHoveredSearch(true)}
+              onMouseLeave={() => setHoveredSearch(false)}
               style={{
                 width: 24,
                 height: 24,
-                borderRadius: 12,
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
                 flexShrink: 0,
+                position: 'relative',
               }}
             >
+              <motion.div
+                animate={{
+                  backgroundColor: hoveredSearch ? '#323232' : 'rgba(50, 50, 50, 0)',
+                }}
+                transition={{ duration: 0.12 }}
+                style={{
+                  position: 'absolute',
+                  left: '50%',
+                  top: '50%',
+                  width: 32,
+                  height: 32,
+                  borderRadius: 16,
+                  marginLeft: -16,
+                  marginTop: -16,
+                  pointerEvents: 'none',
+                }}
+              />
               <img
                 src="/icons/tab-search.svg"
                 alt=""
-                style={{ width: 16, height: 16, display: 'block' }}
+                style={{ width: 16, height: 16, display: 'block', position: 'relative', zIndex: 1 }}
               />
             </div>
 
-            {/* Placeholder text — smooth left-to-right reveal */}
-            <motion.div
-              initial={false}
-              animate={{
-                clipPath: searchOpen
-                  ? 'inset(0 0% 0 0)'
-                  : 'inset(0 100% 0 0)',
-              }}
-              transition={
-                searchOpen
-                  ? { duration: 0.4, delay: 0.12, ease: [0.25, 0.1, 0.25, 1] }
-                  : { duration: 0.2, ease: [0.4, 0, 1, 1] }
-              }
+            {/* Placeholder text — left-aligned with icon, vertically centered in pill */}
+            <div
               style={{
                 marginLeft: 10,
                 whiteSpace: 'nowrap',
                 overflow: 'hidden',
+                position: 'relative',
+                flex: 1,
+                minWidth: 0,
               }}
             >
-              <span
+              <motion.span
+                initial={false}
+                animate={{
+                  opacity: searchOpen ? 1 : 0,
+                  x: searchOpen ? 0 : -6,
+                  clipPath: searchOpen
+                    ? 'inset(0 0% 0 0)'
+                    : 'inset(0 100% 0 0)',
+                }}
+                transition={
+                  searchOpen
+                    ? {
+                        ...gentleSpring,
+                        duration: 0.32,
+                        delay: 0.06,
+                      }
+                    : {
+                        ...gentleSpring,
+                        duration: 0.15,
+                      }
+                }
                 style={{
+                  display: 'inline-block',
+                  position: 'relative',
+                  top: 1,
+                  overflow: 'hidden',
+                  whiteSpace: 'nowrap',
                   fontFamily: "'IBM Plex Mono', monospace",
                   fontSize: 12,
-                  color: '#e4e4e4',
-                  lineHeight: 'normal',
+                  color: '#7a7a7a',
+                  lineHeight: 1.1,
                 }}
               >
                 What are you looking for?
-              </span>
-            </motion.div>
+                {searchOpen && (
+                  <span
+                    aria-hidden="true"
+                    className="search-shimmer"
+                    style={{
+                      position: 'absolute',
+                      inset: 0,
+                      pointerEvents: 'none',
+                    }}
+                  >
+                    What are you looking for?
+                  </span>
+                )}
+              </motion.span>
+            </div>
           </motion.div>
         </div>
       </div>
